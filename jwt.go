@@ -1,5 +1,5 @@
 /*-
- * Copyright 2012 Matthew Endsley
+ * Copyright 2012-2014 Matthew Endsley
  * All rights reserved
  *
  * Redistribution and use in source and binary forms, with or without
@@ -30,7 +30,6 @@ import (
 	"bytes"
 	"crypto/hmac"
 	"crypto/sha256"
-	"encoding/base64"
 	"encoding/json"
 	"errors"
 	"strings"
@@ -80,11 +79,6 @@ func Encode(sellerId, secret string, purchase *Purchase, expiration time.Duratio
 	sign.Write([]byte(signingString))
 
 	return signingString + "." + safeEncode(sign.Sum(nil)), nil
-}
-
-func safeEncode(data []byte) string {
-	str := base64.URLEncoding.EncodeToString(data)
-	return strings.Replace(str, "=", "", -1)
 }
 
 func Verify(jwt, secret string) (purchase *Purchase, orderId string, err error) {
@@ -148,13 +142,4 @@ func Verify(jwt, secret string) (purchase *Purchase, orderId string, err error) 
 	}
 
 	return &claim.Request, claim.Response.OrderId, nil
-}
-
-func safeDecode(str string) ([]byte, error) {
-	lenMod4 := len(str) % 4
-	if lenMod4 > 0 {
-		str = str + strings.Repeat("=", 4-lenMod4)
-	}
-
-	return base64.URLEncoding.DecodeString(str)
 }
